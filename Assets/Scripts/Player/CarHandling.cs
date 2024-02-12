@@ -55,10 +55,10 @@ public class CarHandling : MonoBehaviour
     {
         carRigidBody.centerOfMass = centerOfMass.localPosition;
 
-        carInputActions = new CarInputActions();
-
         initialDrag = carRigidBody.drag;
         initialAngularDrag = carRigidBody.angularDrag;
+
+        carInputActions = new CarInputActions();
 
         carInputActions.Drive.Move.performed += (InputAction.CallbackContext context) =>
         {
@@ -93,18 +93,20 @@ public class CarHandling : MonoBehaviour
 
     void FixedUpdate()
     {
-        MoveCar(acceleration: verticalInput);
+        MoveCar(verticalInput);
         SteerCar(steering: horizontalInput);
         HandleBraking(braking: brakeInput);
         AnimateWheels();
     }
 
-    void MoveCar(float acceleration)
+    void MoveCar(float verticalInput)
     {
-        acceleration = Mathf.Clamp(acceleration, -1.0f, 1.0f);
+        verticalInput = Mathf.Clamp(verticalInput, -1.0f, 1.0f);
 
+        // Apply a torque to all the wheel
+        // Based on the vertical input, +value : Forward and -value : Backwards
         for (int i = 0; i < wheelColliders.Length; i++)
-            wheelColliders[i].GetComponent<WheelCollider>().motorTorque = acceleration * maxTorque;
+            wheelColliders[i].GetComponent<WheelCollider>().motorTorque = verticalInput * maxTorque;
     }
 
     //! Only apply steering to the front wheels
@@ -113,7 +115,7 @@ public class CarHandling : MonoBehaviour
         steering = Mathf.Clamp(steering, -1.0f, 1.0f);
 
         if (useNaiveSteering)
-            //! Naive car steering. Use Ackerman steering
+            //! Naive car steering. You shoulw use Ackerman steering instead
             for (int i = 0; i < 2; i++)
                 wheelColliders[i].GetComponent<WheelCollider>().steerAngle = steering * maxSteerAngle;
         else
@@ -139,23 +141,21 @@ public class CarHandling : MonoBehaviour
 
     void HandleBraking(float braking)
     {
-        for (int i = 0; i < wheelColliders.Length; i++)
-        {
-            //! Only apply breaks on the rear wheel
-            if (i > 2)
-                wheelColliders[i].GetComponent<WheelCollider>().brakeTorque = braking * maxBrakingTorque;
+        // 1. Apply breaking torque
+        //! Only apply breaks on the rear wheel
+        wheelColliders[2].GetComponent<WheelCollider>().brakeTorque = braking * maxBrakingTorque;
+        wheelColliders[3].GetComponent<WheelCollider>().brakeTorque = braking * maxBrakingTorque;
 
-            // Drag
-            if (braking == 1)
-            {
-                carRigidBody.drag = 0.5f;
-                carRigidBody.angularDrag = 0.2f;
-            }
-            else
-            {
-                carRigidBody.drag = initialDrag;
-                carRigidBody.angularDrag = initialAngularDrag;
-            }
+        // 2. Apply drag
+        if (braking == 1)
+        {
+            carRigidBody.drag = 0.5f;
+            carRigidBody.angularDrag = 0.2f;
+        }
+        else
+        {
+            carRigidBody.drag = initialDrag;
+            carRigidBody.angularDrag = initialAngularDrag;
         }
     }
 

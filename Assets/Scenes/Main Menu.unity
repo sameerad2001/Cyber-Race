@@ -2245,7 +2245,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: NightFall
+  m_text: Cyber Race
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 2a0b3aae497be41689ce0dcd19df8e28, type: 2}
   m_sharedMaterial: {fileID: -8545002179692212042, guid: 2a0b3aae497be41689ce0dcd19df8e28,
